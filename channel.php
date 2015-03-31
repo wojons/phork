@@ -21,7 +21,11 @@ class channel {
     function destroy() {
         return msg_remove_queue($this->queue);
     }
-        
+    
+    function stats() {
+        return msg_stat_queue ($this->queue);
+    }
+    
     function try_promise() {
         $message = null;
         $msgtype = null;

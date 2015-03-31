@@ -5,6 +5,16 @@ class scheduler {
     private $co_stack = array();
     private $co_pointer = null;
     private $promise = array();
+    private $yields = array();
+    
+    private $delay = 0.1;
+    private $master_key = null; //this is the key that is ussed when building channels
+    
+    function __construct($delay) {
+        $pid   = getmypid();
+        $time  = time();
+        $this->master_key = (int)"$pid.$time";
+    }
     
     function new_co($func) {
         $this->co_stack[] = $func;
@@ -17,9 +27,23 @@ class scheduler {
         //print "meh";
     }
     
-    function promise($promise, $pointer=null) {
+    function promise_set($promise, $sub=null, $pointer=null) {
         if ($pointer == null) { $pointer = $this->co_pointer; }
-        $this->promise[] = array('co_pointer' => $pointer, 'promise' => $promise);
+        $this->promise[$pointer][] = array('promise' => $promise);
+        
+        if (isset($this->yields[$pointer])) { //make sure it does not run with the yiels group
+            unset($this->yields[$pointer]);
+        }
+        
+        return max(array_keys($this->promise[$pointer]));
+    }
+    
+    function promise_del($promise_num, $pointer=null) {
+        if ($pointer == null) { $pointer = $this->get_current_co_pointer(); }
+        unset($this->promise[$pointer][$pointer_num]);
+        if (empty($this->promise[$pointer])) {
+            $this->yields[$pointer] = True;
+        }
     }
     
     function loop() {
@@ -29,11 +53,20 @@ class scheduler {
             $loop_time = microtime(true);
             //var_dump($this->promise);
             foreach($this->promise as $dex=>$dat) {
-                if ($dat['promise']()== true) {
-                    $this->co_pointer = $dat['co_pointer'];
-                    unset($this->promise[$dex]);
-                    $this->co_stack[$this->co_pointer]->next();
+                foreach($dat as $prom_dex => $prom_dat) {
+                    if ($prom_dat['promise']()== true) {
+                        do {
+                            $this->co_pointer = $dex;
+                            $this->co_stack[$this->co_pointer]->send($prom_dex);
+                        } while ($prom_dat['promise']() == True);
+                        break; //we have meet one of the promises no need to stick around
+                    }
                 }
+            }
+            
+            //run all the things that simply yieled
+            foreach($this->yields as $dex=>$dat) {
+                $this->co_stack[$this->co_pointer]->next();
             }
             
             //print "DEX: ".$dex.PHP_EOL;
@@ -42,9 +75,9 @@ class scheduler {
             }
             
             $loop_end_time = microtime(true);
-            if($loop_time-$loop_end_time < 1) {
-                usleep((($loop_time+1)-$loop_end_time)*1000000);
+            if($loop_time-$loop_end_time < $this->delay) {
                 print "PAUSE".PHP_EOL;
+                usleep((($loop_time+$this->delay)-$loop_end_time)*1000000);
             }
         }
     }
