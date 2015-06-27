@@ -41,7 +41,7 @@ class Scheduler {
         return max(array_keys($this->promise[$pointer]));
     }
     
-    public unction promise_del($promise_num, $pointer=null) {
+    public function promise_del($promise_num, $pointer=null) {
         if ($pointer == null) { $pointer = $this->get_current_co_pointer(); }
         unset($this->promise[$pointer][$pointer_num]);
         if (empty($this->promise[$pointer])) {
