@@ -1,0 +1,13 @@
+{
+	"name": "wojons/phork",
+	"description": "Async PHP with all the magic",
+	"autoload": {
+		"psr-0": {
+			"Wojons\\Phork": "src/"
+		}
+	},
+	"license": "MIT",
+	"require": {
+		"php": ">=5.6.0"
+	}
+}
