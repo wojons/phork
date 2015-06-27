@@ -1,6 +1,9 @@
 <?php
+namespace Wojons\Phork;
 
-class scheduler {
+use Wojons\Phork\Promise;
+
+class Scheduler {
     
     private $co_stack = array();
     private $co_pointer = null;
@@ -10,13 +13,13 @@ class scheduler {
     private $delay = 0.1;
     private $master_key = null; //this is the key that is ussed when building channels
     
-    function __construct($delay) {
+    public function __construct($delay) {
         $pid   = getmypid();
         $time  = time();
         $this->master_key = (int)"$pid.$time";
     }
     
-    function new_co($func) {
+    public function new_co($func) {
         $this->co_stack[] = $func;
         $this->co_pointer = count($this->co_stack)-1;
         //print "running";
@@ -27,7 +30,7 @@ class scheduler {
         //print "meh";
     }
     
-    function promise_set($promise, $sub=null, $pointer=null) {
+    public function promise_set($promise, $sub=null, $pointer=null) {
         if ($pointer == null) { $pointer = $this->co_pointer; }
         $this->promise[$pointer][] = array('promise' => $promise);
         
@@ -38,7 +41,7 @@ class scheduler {
         return max(array_keys($this->promise[$pointer]));
     }
     
-    function promise_del($promise_num, $pointer=null) {
+    public unction promise_del($promise_num, $pointer=null) {
         if ($pointer == null) { $pointer = $this->get_current_co_pointer(); }
         unset($this->promise[$pointer][$pointer_num]);
         if (empty($this->promise[$pointer])) {
@@ -46,7 +49,7 @@ class scheduler {
         }
     }
     
-    function loop() {
+    public function loop() {
         
         //var_dump($this->promise);
         while (!empty($this->promise)) {
@@ -82,12 +85,7 @@ class scheduler {
         }
     }
     
-    function try_promise() {
+    public function try_promise() {
         
     }
-}
-
-class promise {
-    
-    
 }

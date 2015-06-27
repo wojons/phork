@@ -1,9 +1,10 @@
 <?php
 
-require_once('../phork.php');
+use Wojons\Phork\Phork;
+use Wojons\Phork\Channel;
 
-$phork = new phork();
-$channel = new channel(123777);
+$phork = new Phork();
+$channel = new Channel(123777);
 $channel->destroy();
 
 
@@ -12,7 +13,7 @@ print "MAIN THREAD START".PHP_EOL;
 $phork->exec(function(&$s) { 
     yield;
     
-    $channel = new channel(123777);
+    $channel = new Channel(123777);
     $s->promise_set(function() use ($channel) {
             if($channel->stats()['msg_qnum'] < 100) {
                 return True;
@@ -40,7 +41,7 @@ print "FORKING".PHP_EOL;
 $phork->branch(function(&$s) use ($name) {
     
     yield;
-    $channel = new channel(123777);
+    $channel = new Channel(123777);
     $s->promise_set(function() use ($channel) {
             return $channel->try_promise();
     });
