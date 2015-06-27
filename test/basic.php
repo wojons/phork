@@ -1,4 +1,5 @@
 <?php
+require '../vendor/autoload.php';
 
 use Wojons\Phork\Phork;
 use Wojons\Phork\Channel;
