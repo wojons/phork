@@ -78,7 +78,7 @@ class Scheduler {
             }
             
             $loop_end_time = microtime(true);
-            if($loop_time-$loop_end_time < $this->delay) {
+            if ($loop_time-$loop_end_time < $this->delay) {
                 print "PAUSE".PHP_EOL;
                 usleep((($loop_time+$this->delay)-$loop_end_time)*1000000);
             }
